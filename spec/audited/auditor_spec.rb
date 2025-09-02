@@ -353,6 +353,11 @@ describe Audited::Auditor do
       expect(user.audits.first.audited_changes).to eq(user.audited_attributes)
     end
 
+    it "should set source to cleaned backtrace" do
+      expect(user.audits.first.source).to be_present
+      expect(user.audits.first.source).to be_a(Array)
+    end
+
     it "should store enum value" do
       expect(user.audits.first.audited_changes["status"]).to eq(1)
     end
@@ -412,6 +417,12 @@ describe Audited::Auditor do
     it "should store the changed attributes" do
       @user.update! name: "Changed"
       expect(@user.audits.last.audited_changes).to eq({"name" => ["Brandon", "Changed"]})
+    end
+
+    it "should set source to cleaned backtrace on update" do
+      @user.update! name: "Changed"
+      expect(@user.audits.last.source).to be_present
+      expect(@user.audits.last.source).to be_a(Array)
     end
 
     it "should store changed enum values" do
@@ -594,6 +605,12 @@ describe Audited::Auditor do
     it "should store enum value" do
       @user.destroy
       expect(@user.audits.last.audited_changes["status"]).to eq(0)
+    end
+
+    it "should set source to cleaned backtrace on destroy" do
+      @user.destroy
+      expect(@user.audits.last.source).to be_present
+      expect(@user.audits.last.source).to be_a(Array)
     end
 
     it "should be able to reconstruct a destroyed record without history" do

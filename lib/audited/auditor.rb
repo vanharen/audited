@@ -377,6 +377,8 @@ module Audited
 
         if auditing_enabled
           attrs[:associated] = send(audit_associated_with) unless audit_associated_with.nil?
+          clean_backtrace = Rails.backtrace_cleaner.clean(caller)
+          attrs[:source] = clean_backtrace
 
           run_callbacks(:audit) {
             audit = audits.create(attrs)

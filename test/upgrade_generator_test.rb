@@ -85,6 +85,16 @@ class UpgradeGeneratorTest < Rails::Generators::TestCase
     end
   end
 
+  test "should add 'source' to audits table" do
+    load_schema 7
+
+    run_generator %w[upgrade]
+
+    assert_migration "db/migrate/add_source_to_audits.rb" do |content|
+      assert_match(/add_column :audits, :source, :text/, content)
+    end
+  end
+
   test "generate migration with correct AR migration parent" do
     load_schema 1
 
