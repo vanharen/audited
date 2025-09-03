@@ -25,13 +25,7 @@ class InstallGeneratorTest < Rails::Generators::TestCase
     end
   end
 
-  test "generate migration with 'text' type for source column" do
-    run_generator
 
-    assert_migration "db/migrate/install_audited.rb" do |content|
-      assert_includes(content, "t.column :source, :text")
-    end
-  end
 
   test "generate migration with 'json' type for audited_changes column" do
     run_generator %w[--audited-changes-column-type json]

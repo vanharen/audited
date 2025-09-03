@@ -35,6 +35,8 @@ module Audited
       #
       # * +require_comment+ - Ensures that audit_comment is supplied before
       #   any create, update or destroy operation.
+      # * +comment_defaults_to_stack+ - If set to true, the audit comment will be
+      #   set to the stack trace if no audit_comment is provided.
       # * +max_audits+ - Limits the number of stored audits.
 
       # * +redacted+ - Changes to these fields will be logged, but the values
@@ -373,12 +375,17 @@ module Audited
       end
 
       def write_audit(attrs)
+        if Audited.comment_defaults_to_stack && audit_comment.blank?
+          clean_backtrace = Rails.backtrace_cleaner.clean(caller)
+          attrs[:comment] = clean_backtrace.join("\n").truncate(255)
+        else
+          attrs[:comment] = audit_comment
+        end
+
         self.audit_comment = nil
 
         if auditing_enabled
           attrs[:associated] = send(audit_associated_with) unless audit_associated_with.nil?
-          clean_backtrace = Rails.backtrace_cleaner.clean(caller)
-          attrs[:source] = clean_backtrace
 
           run_callbacks(:audit) {
             audit = audits.create(attrs)

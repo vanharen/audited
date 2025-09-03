@@ -83,6 +83,10 @@ describe Audited::Auditor do
       end
     end
 
+    it "should have comment_defaults_to_stack enabled by default" do
+      expect(Audited.comment_defaults_to_stack).to eq(true)
+    end
+
     context "should be configurable which conditions are audited" do
       subject { ConditionalCompany.new.send(:auditing_enabled) }
 
@@ -353,9 +357,23 @@ describe Audited::Auditor do
       expect(user.audits.first.audited_changes).to eq(user.audited_attributes)
     end
 
-    it "should set source to cleaned backtrace" do
-      expect(user.audits.first.source).to be_present
-      expect(user.audits.first.source).to be_a(Array)
+    it "should set comment to cleaned backtrace when comment_defaults_to_stack is true" do
+      expect(user.audits.first.comment).to be_present
+      expect(user.audits.first.comment).to be_a(String)
+      expect(user.audits.first.comment.length).to be <= 255
+    end
+
+    it "should not set comment to backtrace when comment_defaults_to_stack is false" do
+      original_setting = Audited.comment_defaults_to_stack
+      Audited.comment_defaults_to_stack = false
+      user = create_user status: :reliable
+      expect(user.audits.first.comment).to be_nil
+      Audited.comment_defaults_to_stack = original_setting
+    end
+
+    it "should use provided audit_comment instead of backtrace when comment is provided" do
+      user = create_user status: :reliable, audit_comment: "Custom comment"
+      expect(user.audits.first.comment).to eq("Custom comment")
     end
 
     it "should store enum value" do
@@ -419,10 +437,11 @@ describe Audited::Auditor do
       expect(@user.audits.last.audited_changes).to eq({"name" => ["Brandon", "Changed"]})
     end
 
-    it "should set source to cleaned backtrace on update" do
+    it "should set comment to cleaned backtrace on update when comment_defaults_to_stack is true" do
       @user.update! name: "Changed"
-      expect(@user.audits.last.source).to be_present
-      expect(@user.audits.last.source).to be_a(Array)
+      expect(@user.audits.last.comment).to be_present
+      expect(@user.audits.last.comment).to be_a(String)
+      expect(@user.audits.last.comment.length).to be <= 255
     end
 
     it "should store changed enum values" do
@@ -607,10 +626,11 @@ describe Audited::Auditor do
       expect(@user.audits.last.audited_changes["status"]).to eq(0)
     end
 
-    it "should set source to cleaned backtrace on destroy" do
+    it "should set comment to cleaned backtrace on destroy when comment_defaults_to_stack is true" do
       @user.destroy
-      expect(@user.audits.last.source).to be_present
-      expect(@user.audits.last.source).to be_a(Array)
+      expect(@user.audits.last.comment).to be_present
+      expect(@user.audits.last.comment).to be_a(String)
+      expect(@user.audits.last.comment.length).to be <= 255
     end
 
     it "should be able to reconstruct a destroyed record without history" do

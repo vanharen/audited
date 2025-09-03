@@ -15,7 +15,8 @@ module Audited
       :ignored_attributes,
       :ignored_default_callbacks,
       :max_audits,
-      :store_synthesized_enums
+      :store_synthesized_enums,
+      :comment_defaults_to_stack
     attr_writer :audit_class
 
     def audit_class
@@ -45,6 +46,7 @@ module Audited
   @current_user_method = :current_user
   @auditing_enabled = true
   @store_synthesized_enums = false
+  @comment_defaults_to_stack = true
 end
 
 require "audited/auditor"
